@@ -44,63 +44,64 @@ void cpu_rgb_to_grayscale(
 }
 
 
-void cpu_box_blur(
-    const uint8_t* input,
-    uint8_t* output,
-    int width,
-    int height
-) {
-    const int kernel_radius = 1;
+// void cpu_box_blur(
+//     const uint8_t* input,
+//     uint8_t* output,
+//     int width,
+//     int height
+// ) {
+//     const int kernel_radius = 1;
 
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x <  width; ++x) {
-            int sum = 0;
+//     for (int y = 0; y < height; ++y) {
+//         for (int x = 0; x <  width; ++x) {
+//             int sum = 0;
 
-            for (int ky = -kernel_radius; ky <= kernel_radius; ++ky) {
-                for (int kx = -kernel_radius; kx <= kernel_radius; ++kx) {
-                    int nx = x + kx;
-                    int ny = y + ky;
+//             for (int ky = -kernel_radius; ky <= kernel_radius; ++ky) {
+//                 for (int kx = -kernel_radius; kx <= kernel_radius; ++kx) {
+//                     int nx = x + kx;
+//                     int ny = y + ky;
 
-                    if (nx >= 0 && nx < width &&
-                        ny >= 0 && ny < height) {
-                        sum += input[ny * width + nx];
-                    }
-                }
-            }
+//                     if (nx >= 0 && nx < width &&
+//                         ny >= 0 && ny < height) {
+//                         sum += input[ny * width + nx];
+//                     }
+//                 }
+//             }
             
-            int area = pow((kernel_radius * 2 + 1), 2);
-            output[y * width + x] = static_cast<uint8_t>(sum / area);
-        }
-    }
-}
+//             int area = pow((kernel_radius * 2 + 1), 2);
+//             output[y * width + x] = static_cast<uint8_t>(sum / area);
+//         }
+//     }
+// }
 
-static const float GAUSS[3][3] = {
-    {1, 2, 1},
-    {2, 4, 2},
-    {1, 2, 1}
-};
+// static const float GAUSS[3][3] = {
+//     {1, 2, 1},
+//     {2, 4, 2},
+//     {1, 2, 1}
+// };
 
-void cpu_gaussian_blur(
-    const uint8_t* input,
-    uint8_t* output,
-    int width,
-    int height
-) {
-    int kernel_radius = 1;
+// void cpu_gaussian_blur(
+//     const uint8_t* input,
+//     uint8_t* output,
+//     int width,
+//     int height
+// ) {
+//     int kernel_radius = 1;
 
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x <  width; ++x) {
-            float sum = 0.0f;
-            int area = pow(kernel_radius*2 + 1, 2);
+//     for (int y = 0; y < height; ++y) {
+//         for (int x = 0; x <  width; ++x) {
+//             float sum = 0.0f;
+//             int area = pow(kernel_radius*2 + 1, 2);
 
-            for (int ky = -kernel_radius; ky <= kernel_radius; ++ky) {
-                for (int kx = -kernel_radius; kx <= kernel_radius; ++kx) {
-                    sum += input[(y + ky) * width + (x + kx)] *
-                           GAUSS[y+kernel_radius][x+kernel_radius];
-                }
-            }
+//             for (int ky = -kernel_radius; ky <= kernel_radius; ++ky) {
+//                 for (int kx = -kernel_radius; kx <= kernel_radius; ++kx) {
+//                     if (y + ky < 0 || height <= y + ky || x + kx < 0 || width <= x + kx) continue;
+//                     sum += input[(y + ky) * width + (x + kx)] *
+//                            GAUSS[ky+kernel_radius][kx+kernel_radius];
+//                 }
+//             }
             
-            output[y * width + x] = static_cast<uint8_t>(sum / area);
-        }
-    }
-}
+//             output[y * width + x] = static_cast<uint8_t>(sum / area);
+//         }
+//     }
+// }
