@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(cuda_vision
     src/main.cpp
-    src/cpu_base_line.cpp
+    src/cpu_baseline.cpp
     src/kernels.cu
     src/gpu_pipeline.cu
 )

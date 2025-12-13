@@ -1,3 +1,4 @@
+#include "cuda_kernels.hpp"
 #include <cuda_runtime.h>
 #include <stdint.h>
 
@@ -26,3 +27,4 @@ extern "C" void launch_rgba_to_gray(const uint8_t* d_rgba, uint8_t* d_gray, int 
               (h + block.y - 1) / block.y);
     rgba_to_gray_u8<<<grid, block>>>(d_rgba, d_gray, w, h);
 }
+
