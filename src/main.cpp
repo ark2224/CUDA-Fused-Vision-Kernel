@@ -6,6 +6,11 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+#include<iostream>
+#include <chrono>
 
 bool load_image_rgba(
     const char* path,
@@ -51,6 +56,20 @@ void rgba_to_rgb(
     }
 }
 
+void save_gray_png(const std::string& path, int w, int h, const std::vector<uint8_t>& gray) {
+    if ((int)gray.size() != w*h) throw std::runtime_error("Gray buffer wrong size");
+    // stride = w bytes
+    if (!stbi_write_png(path.c_str(), w, h, 1, gray.data(), w)) {
+        throw std::runtime_error("Failed to write image: " + path);
+    }
+}
+
+
+static double now_ms() {
+    using namespace std::chrono;
+    return duration<double, std::milli>(steady_clock::now().time_since_epoch()).count();
+}
+
 
 int main(int argc, char** argv) {// TEMPORARY SCAFFOLDING
     if (argc < 2) {
@@ -74,19 +93,29 @@ int main(int argc, char** argv) {// TEMPORARY SCAFFOLDING
     std::vector<uint8_t> gpu_gray(width * height);
 
     // call cpu_rgb_to_grayscale(...)
+    double t0 = now_ms();
     cpu_rgb_to_grayscale(
         rgb.data(),
         cpu_gray.data(),
         width,
         height
     );
+    double t1 = now_ms();
+    std::cout << "CPU gray: " << (t1 - t0) << " ms\n";
+    save_gray_png("out_cpu_gray.png", width, height, cpu_gray);
+
     // call launch_rgb_to_grayscale_cuda(...)
+    float gpu_ms = 0.0f;
+    float t2 = now_ms();
     rgb_to_gray_cuda(
         rgb.data(),
         gpu_gray.data(),
         width,
         height
     );
+    float t3 = now_ms();
+    std::cout << "GPU gray: " << (t3 - t2) << " ms\n";
+    save_gray_png("out_gpu_gray.png", width, height, gpu_gray);
 
     // CPU / GPU comparison
     int mismatch_count = 0;
@@ -111,5 +140,5 @@ int main(int argc, char** argv) {// TEMPORARY SCAFFOLDING
     } else {
         std::cout << "CPU/GPU outputs match.\n";
     }
-
+    return 0;
 }

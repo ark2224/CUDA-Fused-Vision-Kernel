@@ -36,7 +36,6 @@ __global__ void rgb_to_grayscale_kernel(
 ) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
-
     if (x >= width || y >= height) return;
 
     int idx = y * width + x;
@@ -62,31 +61,6 @@ extern "C" void launch_rgb_to_gray(
     dim3 grid((width + block.x - 1) / block.x,
               (height + block.y - 1) / block.y);
     rgb_to_grayscale_kernel<<<grid, block>>>(d_rgb, d_gray, width, height);
-    // uint8_t* d_rgb = nullptr;
-    // uint8_t* d_gray = nullptr;
-
-    // size_t rgb_bytes = width * height * 3;
-    // size_t gray_bytes = width * height;
-
-    // cudaMalloc(&d_rgb, rgb_bytes);
-    // cudaMalloc(&d_gray, gray_bytes);
-
-    // cudaMemcpy(d_rgb, h_rgb, rgb_bytes, cudaMemcpyHostToDevice);
-
-    // dim3 block(16, 16);
-    // dim3 grid(
-    //     (width + block.x - 1) / block.x,
-    //     (height + block.y - 1) / block.y
-    // );
-
-    // rgb_to_grayscale_kernel<<<grid, block>>>(
-    //     d_rgb, d_gray, width, height
-    // );
-
-    // cudaMemcpy(h_gray, d_gray, gray_bytes, cudaMemcpyDeviceToHost);
-
-    // cudaFree(d_rgb);
-    // cudaFree(d_gray);
 }
 
 

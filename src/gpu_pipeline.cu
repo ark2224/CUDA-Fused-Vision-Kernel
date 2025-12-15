@@ -13,26 +13,27 @@ std::vector<uint8_t> gpu_rgb_to_gray(const ImageRGBA& img, float* out_ms) {
     uint8_t* d_rgba = nullptr;
     uint8_t* d_gray = nullptr;
 
-    cudaMalloc(&d_rgba, rgba_bytes);
-    cudaMalloc(&d_gray, gray_bytes);
+    cuda_check(cudaMalloc(&d_rgba, rgba_bytes), "cudaMalloc d_rgba failed");
+    cuda_check(cudaMalloc(&d_gray, gray_bytes), "cudaMalloc d_gray failed");
 
     cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
+    cuda_check(cudaEventCreate(&start), "cudaEventCreate start failed");
+    cuda_check(cudaEventCreate(&stop), "cudaEventCreate stop failed");
 
-    cudaEventRecord(start);
+    cuda_check(cudaEventRecord(start), "cudaEventRecord start failed");
 
-    cudaMemcpy(d_rgba, img.data.data(), rgba_bytes, cudaMemcpyHostToDevice);
+    cuda_check(cudaMemcpy(d_rgba, img.data.data(), rgba_bytes, cudaMemcpyHostToDevice), "H2D memcpy failed");
     launch_rgb_to_gray(d_rgba, d_gray, img.w, img.h);
+    cuda_check(cudaGetLastError(), "Kernel launch failed");
 
-    std::vector<uint8_t> out (gray_bytes);
-    cudaMemcpy(out.data(), d_gray, gray_bytes, cudaMemcpyDeviceToDevice);
+    std::vector<uint8_t> out(gray_bytes);
+    (cudaMemcpy(out.data(), d_gray, gray_bytes, cudaMemcpyDeviceToDevice), "D2H memcpy failed");
 
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    cuda_check(cudaEventRecord(stop), "cudaEventRecord start failed");
+    cuda_check(cudaEventSynchronize(stop), "cudaEventSynchronize stop failed");
 
     float ms = 0.0f;
-    cudaEventElapsedTime(&ms, start, stop);
+    cuda_check(cudaEventElapsedTime(&ms, start, stop), "cudaEventElapsedTime failed");
     if (out_ms) *out_ms = ms;
 
     cudaEventDestroy(start);
