@@ -81,7 +81,7 @@ int main(int argc, char** argv) {// TEMPORARY SCAFFOLDING
         height
     );
     // call launch_rgb_to_grayscale_cuda(...)
-    launch_rgb_to_grayscale_cuda(
+    rgb_to_gray_cuda(
         rgb.data(),
         gpu_gray.data(),
         width,
