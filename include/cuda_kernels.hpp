@@ -28,3 +28,11 @@ void rgb_to_gray_cuda(
     int width,
     int height
 );
+
+
+extern "C" void launch_gauss_blur(
+    const uint8_t* d_gray,
+    uint8_t* d_blur,
+    int width,
+    int height
+);

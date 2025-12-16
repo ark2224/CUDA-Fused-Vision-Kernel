@@ -96,3 +96,46 @@ void rgb_to_gray_cuda(
     cudaFree(d_rgb);
     cudaFree(d_gray);
 }
+
+
+static const float GAUSS[3][3] = {
+    {1, 2, 1},
+    {2, 4, 2},
+    {1, 2, 1}
+};
+
+__global__ void gauss_blur_kernel(
+    const uint8_t* d_gray,
+    uint8_t* __restrict__ d_blur,
+    int width,
+    int height
+) {
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (width <= x || height <= y) return;
+
+    int kernel_radius = 1;
+    float sum = 0.0f;
+
+    for (int ky = -kernel_radius; ky <= kernel_radius; ++ky) {
+        for (int kx = -kernel_radius; kx <= kernel_radius; ++kx) {
+            if (x+kx < 0 || width <= x+kx || y+ky < 0 || height <= y+ky) return;
+            sum += d_gray[(y + ky) * width + (x + kx)] *
+                   GAUSS[kx+kernel_radius][ky+kernel_radius];
+        }
+    }
+    d_blur[y * width + x] = static_cast<uint8_t>(sum / 9);
+}
+
+
+extern "C" void launch_gauss_blur(
+    const uint8_t* d_gray,
+    uint8_t* d_blur,
+    int width,
+    int height
+) {
+    dim3 block(16, 16);
+    dim3 grid((width + block.x - 1) / block.x,
+              (height + block.y - 1) / block.y);
+    gauss_blur_kernel<<<block, grid>>>(d_gray, d_blur, width, height);
+}
