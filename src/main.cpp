@@ -71,6 +71,62 @@ static double now_ms() {
 }
 
 
+void blur_experiment(std::vector<uint8_t> gray, int width, int height) {
+    // load image 
+    std::vector<uint8_t> cpu_blur(width * height);
+    std::vector<uint8_t> gpu_blur(width * height);
+
+    // call cpu_rgb_to_grayscale(...)
+    double t0 = now_ms();
+    cpu_gaussian_blur(
+        gray.data(),
+        cpu_blur.data(),
+        width,
+        height
+    );
+    double t1 = now_ms();
+    std::cout << "CPU blur: " << (t1 - t0) << " ms\n";
+    save_gray_png("out_cpu_blur.png", width, height, cpu_blur);
+
+    // call launch_rgb_to_grayscale_cuda(...)
+    float gpu_ms = 0.0f;
+    float t2 = now_ms();
+    gray_to_gauss_blur_cuda(
+        gray.data(),
+        gpu_blur.data(),
+        width,
+        height
+    );
+    float t3 = now_ms();
+    std::cout << "GPU blur: " << (t3 - t2) << " ms\n";
+    save_gray_png("out_gpu_blur.png", width, height, gpu_blur);
+
+    // CPU / GPU comparison
+    int mismatch_count = 0;
+    for (int i = 0; i < width * height; ++i) {
+        int diff = std::abs(
+            static_cast<int>(cpu_blur[i]) - 
+            static_cast<int>(gpu_blur[i])
+        );
+
+        if (diff > 1) {
+            ++mismatch_count;
+            if (mismatch_count < 10) {
+                std::cerr << "Mismatch at index " << i
+                          << ": CPU=" << (int)cpu_blur[i]
+                          << " GPU=" << (int)gpu_blur[i] << "\n";
+            }
+        }
+    }
+
+    if (mismatch_count > 0) {
+        std::cerr << "Total mismatches: " << mismatch_count << "\n";
+    } else {
+        std::cout << "CPU/GPU outputs match.\n";
+    }
+}
+
+
 int main(int argc, char** argv) {// TEMPORARY SCAFFOLDING
     if (argc < 2) {
         std::cerr << "Usage: cuda_vision <image_path>\n";
@@ -140,5 +196,8 @@ int main(int argc, char** argv) {// TEMPORARY SCAFFOLDING
     } else {
         std::cout << "CPU/GPU outputs match.\n";
     }
+
+    blur_experiment(cpu_gray, width, height);
+
     return 0;
 }

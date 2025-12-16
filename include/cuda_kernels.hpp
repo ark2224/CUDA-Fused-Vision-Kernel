@@ -36,3 +36,10 @@ extern "C" void launch_gauss_blur(
     int width,
     int height
 );
+
+void gray_to_gauss_blur_cuda(
+    const uint8_t* h_gray,
+    uint8_t* h_blur,
+    int width,
+    int height
+);

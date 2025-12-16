@@ -91,13 +91,14 @@ void cpu_gaussian_blur(
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x <  width; ++x) {
             float sum = 0.0f;
-            int area = pow(kernel_radius*2 + 1, 2);
+            int area = 0;
 
             for (int ky = -kernel_radius; ky <= kernel_radius; ++ky) {
                 for (int kx = -kernel_radius; kx <= kernel_radius; ++kx) {
                     if (y + ky < 0 || height <= y + ky || x + kx < 0 || width <= x + kx) continue;
                     sum += input[(y + ky) * width + (x + kx)] *
                            GAUSS[ky+kernel_radius][kx+kernel_radius];
+                    area += GAUSS[ky+kernel_radius][kx+kernel_radius];
                 }
             }
             
